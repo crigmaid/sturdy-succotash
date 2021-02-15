@@ -48,6 +48,7 @@ class MyGame(arcade.Window):
         self.foreground_list = None
         self.background_list = None
         self.dont_touch_list = None
+        self.ladder_list = None
         self.player_list = None
 
         # Separate variable that holds the player sprite
@@ -131,6 +132,11 @@ class MyGame(arcade.Window):
                                                             foreground_layer_name,
                                                             TILE_SCALING)
 
+        self.ladder_list = arcade.tilemap.process_layer(my_map,
+                                                        "Ladders",
+                                                        scaling=TILE_SCALING,
+                                                        use_spatial_hash=True)
+
         # -- Platforms
         self.wall_list = arcade.tilemap.process_layer(map_object=my_map,
                                                       layer_name=platforms_layer_name,
@@ -162,13 +168,14 @@ class MyGame(arcade.Window):
 
         # --- Other stuff
         # Set the background color
-        #if my_map.background_color:
+        # if my_map.background_color:
         arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
 
         # Create the 'physics engine'
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.player_sprite,
                                                              self.wall_list,
-                                                             GRAVITY)
+                                                             GRAVITY,
+                                                             ladders=self.ladder_list)
 
     def on_draw(self):
         """ Render the screen. """
@@ -179,6 +186,7 @@ class MyGame(arcade.Window):
         # Draw our sprites
         self.wall_list.draw()
         self.background_list.draw()
+        self.ladder_list.draw()
         self.wall_list.draw()
         self.coin_list.draw()
         self.dont_touch_list.draw()
@@ -194,9 +202,14 @@ class MyGame(arcade.Window):
         """Called whenever a key is pressed. """
 
         if key == arcade.key.UP or key == arcade.key.W:
+            if self.physics_engine.is_on_ladder():
+                self.player_sprite.change_y = 0
             if self.physics_engine.can_jump():
                 self.player_sprite.change_y = PLAYER_JUMP_SPEED
                 arcade.play_sound(self.jump_sound)
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            if self.physics_engine.is_on_ladder():
+                self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
         elif key == arcade.key.LEFT or key == arcade.key.A:
             self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
         elif key == arcade.key.RIGHT or key == arcade.key.D:
