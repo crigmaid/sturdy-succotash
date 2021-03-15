@@ -2,7 +2,7 @@
 Platformer Game
 """
 import arcade
-import math
+#import math
 
 # Constants
 SCREEN_WIDTH = 1080
@@ -46,31 +46,30 @@ class Game(arcade.Window):
         self.player_sprite = None
         self.player_sprite_list = arcade.SpriteList()
         self.player_physics_engine = None
-        self.is_on_a_platform = False
-        self.enemy_sprite = None
-        self.enemy_sprite_list =  arcade.SpriteList()
-        self.enemy_physics_engine = None
-        self.current_time = 0
-        self.is_jumping = False # TODO REFACTOR
-        #self.view_x = 0
-        #self.view_y = 0
-
+        #self.is_on_a_platform = False
+        #self.enemy_sprite = None
+        #self.enemy_sprite_list =  arcade.SpriteList()
+        #self.enemy_physics_engine = None
+        #self.current_time = 0
+        #self.is_jumping = False
+        self.view_bottom = 0
+        self.view_left = 0
 
     def setup(self, level):
         """ Set up the game here. Call this function to restart the game. """
         self.sprite_lists_map = self.read_map("Maps/Level" + str(level) + ".tmx")
-        self.player_sprite = arcade.Sprite("images/player_2/player_stand.png")
-        self.player_sprite.center_x = 250
-        self.player_sprite.center_y = 500
+        self.player_sprite = arcade.Sprite("images/player/hero.png")
+        self.player_sprite.center_x = PLAYER_START_X
+        self.player_sprite.center_y = PLAYER_START_Y
         self.player_sprite_list.append(self.player_sprite)
         self.player_physics_engine = arcade.PhysicsEnginePlatformer(self.player_sprite, self.sprite_lists_map["Platforms"], gravity_constant=GRAVITY)
-        self.enemy_sprite = arcade.Sprite("images/player_1/player_stand.png")
-        self.enemy_sprite.center_x = 400
-        self.enemy_sprite.center_y = 750
-        self.enemy_sprite_list.append(self.enemy_sprite)
-        self.enemy_physics_engine = arcade.PhysicsEnginePlatformer(self.enemy_sprite,
-                                                                    self.sprite_lists_map["Platforms"],
-                                                                    gravity_constant=GRAVITY)
+        #self.enemy_sprite = arcade.Sprite("images/player_1/player_stand.png")
+        #self.enemy_sprite.center_x = 400
+        #self.enemy_sprite.center_y = 750
+        #self.enemy_sprite_list.append(self.enemy_sprite)
+        #self.enemy_physics_engine = arcade.PhysicsEnginePlatformer(self.enemy_sprite,
+         #                                                           self.sprite_lists_map["Platforms"],
+          #                                                          gravity_constant=GRAVITY)
 
     def on_draw(self):
         """ Render the screen. """
@@ -79,7 +78,7 @@ class Game(arcade.Window):
             self.sprite_lists_map[layer_name].draw()
 
         self.player_sprite_list.draw()
-        self.enemy_sprite_list.draw()
+        #self.enemy_sprite_list.draw()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.SPACE:
@@ -104,23 +103,64 @@ class Game(arcade.Window):
 
     def update(self, delta_time):
         """ Movement and game logic """
-        self.current_time = self.current_time + delta_time
-        if math.floor(self.current_time) % 2 == 0 and self.is_jumping == False:
-            self.is_jumping = True
-            self.enemy_sprite.change_y = PLAYER_JUMP_SPEED
-        self.is_jumping = False
+
+        #self.current_time = self.current_time + delta_time
+        #if math.floor(self.current_time) % 2 == 0 and self.is_jumping == False:
+        #    self.is_jumping = True
+        #    self.enemy_sprite.change_y = PLAYER_JUMP_SPEED
+        #self.is_jumping = False
 
         self.player_physics_engine.update()
-        self.enemy_physics_engine.update()
+        #self.enemy_physics_engine.update()
         """        if self.player_sprite.collides_with_list(self.sprite_lists_map["Platforms"]):
             self.is_on_a_platform = True
             print("I am inside of the if statement")
         else:
             self.is_on_a_platform = False"""
+        # --- Manage Scrolling ---
 
+        # Track if we need to change the viewport
 
-    def read_map(self, map_location:str):
-        tiled_map = arcade.read_tmx(map_location)
+        changed = False
+
+        # Scroll left
+        left_boundary = self.view_left + LEFT_VIEWPORT_MARGIN
+        if self.player_sprite.left < left_boundary:
+            self.view_left -= left_boundary - self.player_sprite.left
+            changed = True
+
+        # Scroll right
+        right_boundary = self.view_left + SCREEN_WIDTH - RIGHT_VIEWPORT_MARGIN
+        if self.player_sprite.right > right_boundary:
+            self.view_left += self.player_sprite.right - right_boundary
+            changed = True
+
+        # Scroll up
+        top_boundary = self.view_bottom + SCREEN_HEIGHT - TOP_VIEWPORT_MARGIN
+        if self.player_sprite.top > top_boundary:
+            self.view_bottom += self.player_sprite.top - top_boundary
+            changed = True
+
+        # Scroll down
+        bottom_boundary = self.view_bottom + BOTTOM_VIEWPORT_MARGIN
+        if self.player_sprite.bottom < bottom_boundary:
+            self.view_bottom -= bottom_boundary - self.player_sprite.bottom
+            changed = True
+
+        if changed:
+            # Only scroll to integers. Otherwise we end up with pixels that
+            # don't line up on the screen
+            self.view_bottom = int(self.view_bottom)
+            self.view_left = int(self.view_left)
+
+            # Do the scrolling
+            arcade.set_viewport(self.view_left,
+                                SCREEN_WIDTH + self.view_left,
+                                self.view_bottom,
+                                SCREEN_HEIGHT + self.view_bottom)
+
+    def read_map(self, map_file_location:str):
+        tiled_map = arcade.read_tmx(map_file_location)
         r_map = {}
         for layer in tiled_map.layers:
             sprite_list = arcade.tilemap.process_layer(tiled_map, layer.name, scaling=.5)
@@ -135,5 +175,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-Hello Torin
