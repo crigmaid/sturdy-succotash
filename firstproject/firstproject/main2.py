@@ -6,7 +6,7 @@ import arcade
 
 # Constants
 SCREEN_WIDTH = 1080
-SCREEN_HEIGHT = 1080
+SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Platformer"
 
 # Constants used to scale our sprites from their original size
@@ -25,18 +25,22 @@ PLAYER_JUMP_SPEED = 20
 # and the edge of the screen.
 LEFT_VIEWPORT_MARGIN = 200
 RIGHT_VIEWPORT_MARGIN = 500
-BOTTOM_VIEWPORT_MARGIN = 50
+BOTTOM_VIEWPORT_MARGIN = 0
 TOP_VIEWPORT_MARGIN = 200
 
 PLAYER_START_X = 350
 PLAYER_START_Y = 500
 
+class Item():
+    def __init__(self, sprite: arcade.Sprite, pos_x: int, pos_y: int):
+        self.sprite = sprite
+        self.pos_x = pos_x
+        self.pos_y = pos_y
 
 class Game(arcade.Window):
     """
     Main application class.
     """
-
     def __init__(self):
 
         # Call the parent class and set up the window
@@ -46,12 +50,6 @@ class Game(arcade.Window):
         self.player_sprite = None
         self.player_sprite_list = arcade.SpriteList()
         self.player_physics_engine = None
-        #self.is_on_a_platform = False
-        #self.enemy_sprite = None
-        #self.enemy_sprite_list =  arcade.SpriteList()
-        #self.enemy_physics_engine = None
-        #self.current_time = 0
-        #self.is_jumping = False
         self.view_bottom = 0
         self.view_left = 0
 
@@ -63,6 +61,7 @@ class Game(arcade.Window):
         self.player_sprite.center_y = PLAYER_START_Y
         self.player_sprite_list.append(self.player_sprite)
         self.player_physics_engine = arcade.PhysicsEnginePlatformer(self.player_sprite, self.sprite_lists_map["Ground"], gravity_constant=GRAVITY)
+        arcade.set_viewport(PLAYER_START_X, PLAYER_START_X + 1, PLAYER_START_Y, PLAYER_START_Y - 1)
 
     def on_draw(self):
         """ Render the screen. """
@@ -71,7 +70,6 @@ class Game(arcade.Window):
             self.sprite_lists_map[layer_name].draw()
 
         self.player_sprite_list.draw()
-        #self.enemy_sprite_list.draw()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.SPACE:
