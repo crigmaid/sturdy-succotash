@@ -25,7 +25,7 @@ PLAYER_JUMP_SPEED = 20
 # and the edge of the screen.
 LEFT_VIEWPORT_MARGIN = 200
 RIGHT_VIEWPORT_MARGIN = 500
-BOTTOM_VIEWPORT_MARGIN = 0
+BOTTOM_VIEWPORT_MARGIN = 200
 TOP_VIEWPORT_MARGIN = 200
 
 PLAYER_START_X = 350
@@ -50,6 +50,8 @@ class Game(arcade.Window):
         self.player_sprite = None
         self.player_sprite_list = arcade.SpriteList()
         self.player_physics_engine = None
+        self.player_keys = 0
+        self.item_list = None
         self.view_bottom = 0
         self.view_left = 0
 
@@ -60,12 +62,18 @@ class Game(arcade.Window):
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
         self.player_sprite_list.append(self.player_sprite)
+        self.item_list = self.sprite_lists_map["Keys"]
         self.player_physics_engine = arcade.PhysicsEnginePlatformer(self.player_sprite, self.sprite_lists_map["Ground"], gravity_constant=GRAVITY)
         arcade.set_viewport(PLAYER_START_X, PLAYER_START_X + 1, PLAYER_START_Y, PLAYER_START_Y - 1)
 
     def on_draw(self):
         """ Render the screen. """
         arcade.start_render()
+
+        key_text = f"Keys: {self.player_keys}"
+        arcade.draw_text(key_text, 10 + self.view_left, self.view_bottom + (SCREEN_HEIGHT - 50),
+                         arcade.csscolor.WHITE, 18)
+
         for layer_name in self.sprite_lists_map:
             self.sprite_lists_map[layer_name].draw()
 
@@ -105,6 +113,19 @@ class Game(arcade.Window):
         # --- Manage Scrolling ---
 
         # Track if we need to change the viewport
+        collision = arcade.check_for_collision_with_list(self.player_sprite, self.sprite_lists_map["Keys"])
+        for key in collision:
+            key.remove_from_sprite_lists()
+            self.player_keys += 1
+            print("Player got a key")
+
+
+        collision = arcade.check_for_collision_with_list(self.player_sprite, self.sprite_lists_map["Orange key Block"])
+        for key_block in collision:
+            if (self.player_keys > 0):
+                key_block.remove_from_sprite_lists()
+                self.player_keys -= 1
+                print("Player used a key")
 
         changed = False
 
