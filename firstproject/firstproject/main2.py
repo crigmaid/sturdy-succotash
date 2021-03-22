@@ -57,19 +57,12 @@ class Game(arcade.Window):
 
     def setup(self, level):
         """ Set up the game here. Call this function to restart the game. """
-        self.sprite_lists_map = self.read_map("Maps/Level" + str(level) + ".tmx")
-        self.player_sprite = arcade.Sprite("images/player/hero.png")
+        self.sprite_lists_map = self.read_map("Maps/shootermap.tmx")
+        self.player_sprite = arcade.Sprite("images/player_1/player_stand.png")
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
         self.player_sprite_list.append(self.player_sprite)
-        self.player_physics_engine = arcade.PhysicsEnginePlatformer(self.player_sprite, self.sprite_lists_map["Platforms"], gravity_constant=GRAVITY)
-        #self.enemy_sprite = arcade.Sprite("images/player_1/player_stand.png")
-        #self.enemy_sprite.center_x = 400
-        #self.enemy_sprite.center_y = 750
-        #self.enemy_sprite_list.append(self.enemy_sprite)
-        #self.enemy_physics_engine = arcade.PhysicsEnginePlatformer(self.enemy_sprite,
-         #                                                           self.sprite_lists_map["Platforms"],
-          #                                                          gravity_constant=GRAVITY)
+        self.player_physics_engine = arcade.PhysicsEnginePlatformer(self.player_sprite, self.sprite_lists_map["Ground"], gravity_constant=GRAVITY)
 
     def on_draw(self):
         """ Render the screen. """
@@ -103,12 +96,6 @@ class Game(arcade.Window):
 
     def update(self, delta_time):
         """ Movement and game logic """
-
-        #self.current_time = self.current_time + delta_time
-        #if math.floor(self.current_time) % 2 == 0 and self.is_jumping == False:
-        #    self.is_jumping = True
-        #    self.enemy_sprite.change_y = PLAYER_JUMP_SPEED
-        #self.is_jumping = False
 
         self.player_physics_engine.update()
         #self.enemy_physics_engine.update()
